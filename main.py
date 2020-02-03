@@ -94,7 +94,8 @@ def start(update, context):
         if update.effective_user.username != None and str(update.effective_user.id) in timezones:
             update_user(update.effective_user.username,update.effective_user.id)
             context.bot.send_message(chat_id=update.effective_chat.id, text=f"User name infomation updated.")
-        else:
+        elif str(update.effective_user.id) in timezones:
+            update_user(update.effective_user.username,update.effective_user.id)
             update_timezone(str(update.effective_user.id), DEFAULT_TIMEZONE)
             context.bot.send_message(chat_id=update.effective_chat.id, text=f"The default timezone is {DEFAULT_TIMEZONE}.\nPlease set your own timezone with /settz")
 start_handler = CommandHandler('start', start)
