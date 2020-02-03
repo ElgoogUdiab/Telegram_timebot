@@ -38,14 +38,14 @@ def update_timezone(chat_id, timezone):
         json.dump(timezones, f)
 
 def start(update, context):
-    if update.message.type == "private":
+    if update.message.chat.type == "private":
         update_timezone(str(update.effective_user.id), DEFAULT_TIMEZONE)
         context.bot.send_message(chat_id=update.effective_user.id, text=f"The default timezone is {DEFAULT_TIMEZONE}.\nPlease set your own timezone with /settz")
 start_handler = CommandHandler('start', start)
 dispatcher.add_handler(start_handler)
 
 def set_tz(update, context):
-    if update.message.type != "private":
+    if update.message.chat.type != "private":
         update.message.reply("Only use this command in private message!")
     else:
         reply_markup = ReplyKeyboardMarkup(tz_keyboard)
