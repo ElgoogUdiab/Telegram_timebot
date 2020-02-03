@@ -93,7 +93,7 @@ def select(update, context):
         )
         message = context.bot.send_message(
             chat_id = context.user_data["message"].chat_id,
-            text = "Type the timezone name below."
+            text = "Type the timezone name below.\nOnly support timezone in pytz.all_timezones."
         )
         context.user_data["message"]=message
         return CUSTOM
@@ -145,7 +145,33 @@ def select(update, context):
         context.user_data["message"]=message
         return SELECT
 def custom(update, context):
-    pass
+    timezone = update.message.text
+    if timezone.startswith("GMT"):
+        timezone = "Etc/" + timezone
+    try:
+        pytz.timezone(timezone)
+    except pytz.exceptions.UnknownTimeZoneError:
+        context.bot.delete_message(
+            chat_id = context.user_data["message"].chat_id,
+            message_id = context.user_data["message"].message_id,
+        )
+        context.bot.send_message(
+            chat_id = context.user_data["message"].chat_id,
+            text="Unknown timezone!"
+        )
+        context.user_data.clear()
+        return ConversationHandler.END
+    update_timezone(str(update.effective_user.id), timezone)
+    context.bot.delete_message(
+        chat_id = context.user_data["message"].chat_id,
+        message_id = context.user_data["message"].message_id,
+    )
+    context.bot.send_message(
+        chat_id = context.user_data["message"].chat_id,
+        text = f"Timezone set as {tzname}.",
+        reply_markup = None
+    )
+    context.user_data.clear()
     return ConversationHandler.END
 def cancel(update, context):
     context.bot.send_message(chat_id=update.effective_chat.id, text=f"OK! Canceled")
