@@ -4,6 +4,7 @@ from telegram.ext import CommandHandler, MessageHandler, ConversationHandler, Fi
 from telegram import ReplyKeyboardMarkup, KeyboardButton
 import logging
 import pytz
+from datetime import datetime
 
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -11,6 +12,7 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 logger = logging.getLogger(__name__)
 
 DEFAULT_TIMEZONE = 'UTC'
+fmt="%Y-%m-%d %H:%M:%S %Z%z"
 
 # Timezone tree generation
 tz_dict = {}
@@ -63,6 +65,7 @@ dispatcher = updater.dispatcher
 
 def update_timezone(chat_id, timezone):
     global timezones
+    timezone = timezone.replace(" ", "_")
     timezones.update({str(chat_id): timezone})
     with open("timezone.json", "w") as f:
         json.dump(timezones, f)
@@ -187,6 +190,21 @@ select_tz_handler = ConversationHandler(
     fallbacks = [CommandHandler('cancel', cancel)]
 )
 dispatcher.add_handler(select_tz_handler)
+
+def get_time(update, context):
+    if len(context.args) != 1:
+        context.bot.send_message(chat_id=update.effective_chat.id, text=f"Usage: /time <@user>")
+        return
+    # context.bot.send_message(chat_id=update.effective_chat.id, text=str(update.message.parse_entities()))
+    for entity in update.message.parse_entities():
+        if entity.type=="mention":
+            print(entity)
+            tz = pytz.timezone(timezones[str(entity.user.id)])
+            time_now = datetime.utcnow().replace(tzinfo=pytz.utc)
+            update.message.reply(f"The time for him/her is {time_now.astimezone(tz).strftime(fmt)}")
+            return
+get_time_handler = CommandHandler("time", get_time, pass_args=True)
+dispatcher.add_handler(get_time_handler)
 
 def error(update, context):
     """Log Errors caused by Updates."""
