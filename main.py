@@ -12,7 +12,7 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 logger = logging.getLogger(__name__)
 
 DEFAULT_TIMEZONE = 'UTC'
-fmt="%Y-%m-%d %H:%M:%S"
+fmt="%Y-%m-%d %A %H:%M:%S %Z%z"
 
 # Timezone tree generation
 tz_dict = {}
